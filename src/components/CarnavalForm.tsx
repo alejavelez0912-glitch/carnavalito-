@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Send, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import FileUpload from "./FileUpload";
 import { toast } from "sonner";
 
@@ -18,17 +19,16 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const CarnavalForm = () => {
+  const navigate = useNavigate();
   const [fotoFrente, setFotoFrente] = useState<File | null>(null);
   const [fotoReverso, setFotoReverso] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [photoErrors, setPhotoErrors] = useState({ frente: "", reverso: "" });
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
@@ -47,48 +47,24 @@ const CarnavalForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Simular envío (aquí iría el webhook de n8n)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Pequeña pausa para feedback visual
+      await new Promise((resolve) => setTimeout(resolve, 500));
       
-      console.log("Form data:", data);
-      console.log("Foto frente:", fotoFrente);
-      console.log("Foto reverso:", fotoReverso);
-
-      setIsSuccess(true);
-      toast.success("¡Datos enviados correctamente!");
+      // Navegar al paso 2 con los datos del paso 1
+      navigate("/registro-documentos", {
+        state: {
+          ...data,
+          fotoFrente,
+          fotoReverso,
+        },
+      });
       
-      // Reset after 5 seconds
-      setTimeout(() => {
-        setIsSuccess(false);
-        reset();
-        setFotoFrente(null);
-        setFotoReverso(null);
-      }, 5000);
+      toast.success("¡Paso 1 completado! Ahora sube tus documentos.");
     } catch (error) {
-      toast.error("Error al enviar. Intenta de nuevo.");
-    } finally {
+      toast.error("Error. Intenta de nuevo.");
       setIsSubmitting(false);
     }
   };
-
-  if (isSuccess) {
-    return (
-      <div className="bg-card rounded-2xl p-8 carnaval-border text-center">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-carnaval-green/20 flex items-center justify-center animate-float">
-          <CheckCircle className="w-12 h-12 text-carnaval-green" />
-        </div>
-        <h3 className="font-display text-3xl text-primary mb-4">
-          ¡DATOS RECIBIDOS!
-        </h3>
-        <p className="text-foreground text-lg mb-2">
-          Te llamamos en las próximas 24 horas para tu entrevista.
-        </p>
-        <p className="text-muted-foreground">
-          Revisa tu teléfono y WhatsApp 📱
-        </p>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-card rounded-2xl p-6 md:p-8 carnaval-border space-y-5">
@@ -228,15 +204,22 @@ const CarnavalForm = () => {
         {isSubmitting ? (
           <>
             <Loader2 className="w-6 h-6 animate-spin" />
-            Enviando...
+            Procesando...
           </>
         ) : (
           <>
-            <Send className="w-6 h-6" />
-            ¡QUIERO MI PUESTO EN EL CARNAVAL!
+            CONTINUAR AL PASO 2
+            <ArrowRight className="w-6 h-6" />
           </>
         )}
       </button>
+      
+      {/* Progress indicator */}
+      <div className="flex items-center justify-center gap-2 mt-4">
+        <div className="w-3 h-3 rounded-full bg-primary"></div>
+        <div className="w-3 h-3 rounded-full bg-muted"></div>
+        <span className="text-muted-foreground text-xs ml-2">Paso 1 de 2</span>
+      </div>
 
       <p className="text-center text-muted-foreground text-xs mt-4">
         🔒 Tus datos están protegidos y solo se usan para el proceso de selección.
