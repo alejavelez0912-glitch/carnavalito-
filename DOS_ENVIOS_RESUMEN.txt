@@ -1,0 +1,306 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║           ✅ 2 ENVÍOS IMPLEMENTADOS Y LISTOS PARA TESTING             ║
+║                                                                        ║
+║                     Cambio #7 - Completado                            ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+
+📊 RESUMEN DE LA IMPLEMENTACIÓN
+═══════════════════════════════════════════════════════════════════════
+
+✅ PASO 1: Crear Registro (CarnavalForm.tsx)
+   └─ Envía: Datos personales + Fotos cédula
+   └─ Hook: useRegistroPaso1.ts (100+ líneas)
+   └─ Valida: Cédula única, campos requeridos, fotos obligatorias
+   └─ Almacena: Registro en BD + Fotos en Storage + ID en sessionStorage
+
+✅ PASO 2: Completar Registro (RegistroDocumentos.tsx)
+   └─ Envía: Hoja de vida + Foto de rostro
+   └─ Hook: useRegistroPaso2.ts (100+ líneas)
+   └─ Actualiza: Registro con estado 'completado'
+   └─ Almacena: Documentos en Storage
+   └─ Limpia: sessionStorage cuando termina
+
+
+🔄 FLUJO COMPLETO
+═══════════════════════════════════════════════════════════════════════
+
+Usuario completa Paso 1 (CarnavalForm)
+        ↓
+[CLICK] "CONTINUAR AL PASO 2"
+        ↓
+useRegistroPaso1.crear() ejecuta:
+  1. Validar cédula única
+  2. Subir foto cédula FRENTE
+  3. Subir foto cédula REVERSO
+  4. Crear registro en BD (estado: 'paso_1')
+  5. Guardar ID en sessionStorage
+  6. Mostrar toast verde
+        ↓
+[NAVEGA] → Paso 2
+        ↓
+Usuario completa Paso 2 (RegistroDocumentos)
+        ↓
+[CLICK] "COMPLETAR INSCRIPCIÓN"
+        ↓
+useRegistroPaso2.completar() ejecuta:
+  1. Obtener ID de sessionStorage
+  2. Subir hoja de vida
+  3. Subir foto de rostro
+  4. Actualizar registro (estado: 'completado')
+  5. Mostrar pantalla de éxito
+  6. Limpiar sessionStorage
+        ↓
+[ÉXITO] ✅ ¡INSCRIPCIÓN COMPLETA!
+
+
+📁 ARCHIVOS CREADOS/MODIFICADOS
+═══════════════════════════════════════════════════════════════════════
+
+✨ NUEVOS:
+  • src/hooks/useRegistroPaso1.ts      (Hook para Paso 1)
+  • src/hooks/useRegistroPaso2.ts      (Hook para Paso 2)
+  • IMPLEMENTACION_2_ENVIOS.md         (Documentación)
+
+✅ MODIFICADOS:
+  • src/components/CarnavalForm.tsx    (Integración hook)
+  • src/pages/RegistroDocumentos.tsx   (Integración hook)
+  • CHANGELOG.md                       (Registro de cambio)
+
+
+🎯 CARACTERÍSTICAS PRINCIPALES
+═══════════════════════════════════════════════════════════════════════
+
+✅ PASO 1:
+   • Validación cédula única (consulta BD)
+   • Upload de 2 fotos a Storage
+   • Creación de registro en BD
+   • Estado guardado en sessionStorage
+   • Toasts para feedback visual
+   • Loading states en botones
+
+✅ PASO 2:
+   • Upload de 2 archivos a Storage
+   • Actualización de registro
+   • Marcado como completado
+   • Pantalla de éxito
+   • Limpieza automática de sessionStorage
+   • Toasts para feedback visual
+
+✅ VALIDACIONES:
+   • Cédula única (nivel BD)
+   • Campos requeridos (Zod)
+   • Fotos obligatorias
+   • Archivos obligatorios
+   • Tipos de archivo validados
+
+
+🧪 CÓMO PROBAR
+═══════════════════════════════════════════════════════════════════════
+
+REQUISITO PREVIO:
+  1. Crear Supabase project en https://supabase.com
+  2. Importar schema.sql en SQL Editor
+  3. Crear .env.local con credenciales
+  4. npm install
+
+TEST 1: PASO 1 EXITOSO
+  1. Abrir http://localhost:5173
+  2. Llenar formulario Paso 1
+  3. Subir 2 fotos de cédula
+  4. Click "CONTINUAR AL PASO 2"
+  5. Verificar:
+     ✓ Toast verde: "Paso 1 completado correctamente"
+     ✓ Redirige a Paso 2 automáticamente
+     ✓ En Supabase → registros_usuarios: Ver registro nuevo
+     ✓ En Supabase → Storage: Ver fotos en carpeta cedulas/
+
+TEST 2: VALIDACIÓN - CÉDULA DUPLICADA
+  1. Llenar Paso 1 con cédula repetida
+  2. Click "CONTINUAR"
+  3. Verificar:
+     ✓ Toast rojo: "Cédula ya está registrada"
+     ✓ NO navega a Paso 2
+     ✓ Puedes reintentar
+
+TEST 3: PASO 2 EXITOSO
+  1. Desde Paso 2 (viniendo de Paso 1)
+  2. Subir hoja de vida y foto rostro
+  3. Click "COMPLETAR INSCRIPCIÓN"
+  4. Verificar:
+     ✓ Toast verde: "¡Registro completado correctamente!"
+     ✓ Muestra pantalla de éxito con confetti
+     ✓ En Supabase → registro: estado = "completado"
+     ✓ En Supabase → Storage: Ver documentos y fotos
+
+TEST 4: VALIDACIÓN - ACCESO DIRECTO SIN PASO 1
+  1. Abrir directamente http://localhost:5173/registro-documentos
+  2. Verificar:
+     ✓ Redirige a home (no hay sessionStorage)
+
+
+🔐 VALIDACIONES EN DETALLE
+═══════════════════════════════════════════════════════════════════════
+
+PASO 1 - Validaciones Antes de Enviar:
+  ✓ Nombre: 3-100 caracteres (Zod)
+  ✓ Edad: 18-60 años (Zod)
+  ✓ Cédula: 6-12 dígitos (Zod)
+  ✓ Cédula única: No duplicados en BD
+  ✓ Barrio: Requerido (Zod)
+  ✓ Estado civil: Enum (Zod)
+  ✓ Ocupación: Enum (Zod)
+  ✓ Fotos cédula: Ambas obligatorias
+
+PASO 2 - Validaciones Antes de Enviar:
+  ✓ Hoja de vida: Obligatoria
+  ✓ Foto de rostro: Obligatoria
+  ✓ Registro existe: sessionStorage
+  ✓ ID válido: Consulta a BD
+
+
+📡 DATOS ALMACENADOS
+═══════════════════════════════════════════════════════════════════════
+
+EN BD DESPUÉS DE PASO 1:
+  {
+    id: "uuid-generado",
+    nombre_completo: "Juan Carlos Pérez García",
+    edad: 30,
+    cedula: "123456789",
+    barrio: "San José",
+    estado_civil: "soltero",
+    ocupacion: "trabajo",
+    foto_cedula_frente_path: "cedulas/123456789/cedula_frente.jpg",
+    foto_cedula_reverso_path: "cedulas/123456789/cedula_reverso.jpg",
+    estado_registro: "paso_1",
+    fecha_creacion: "2026-01-19T15:30:00Z"
+  }
+
+EN STORAGE DESPUÉS DE PASO 1:
+  cedulas/
+  └─ 123456789/
+     ├─ cedula_frente.jpg
+     └─ cedula_reverso.jpg
+
+EN BD DESPUÉS DE PASO 2 (Actualización):
+  {
+    hoja_vida_path: "documentos/uuid-registro/hoja_vida.pdf",
+    foto_rostro_path: "fotos-rostro/uuid-registro/foto_rostro.jpg",
+    estado_registro: "completado",
+    fecha_completado: "2026-01-19T15:45:00Z"
+  }
+
+EN STORAGE DESPUÉS DE PASO 2:
+  documentos/
+  └─ uuid-registro/
+     └─ hoja_vida.pdf
+
+  fotos-rostro/
+  └─ uuid-registro/
+     └─ foto_rostro.jpg
+
+
+⚙️ CÓMO FUNCIONAN LOS HOOKS
+═══════════════════════════════════════════════════════════════════════
+
+useRegistroPaso1:
+  const { crear, loading, registro } = useRegistroPaso1()
+  
+  // Llamar en onSubmit:
+  const resultado = await crear({
+    nombre_completo: "...",
+    edad: 30,
+    cedula: "...",
+    barrio: "...",
+    estado_civil: "soltero",
+    ocupacion: "trabajo",
+    foto_cedula_frente: fotoFile,
+    foto_cedula_reverso: fotoFile
+  })
+  
+  // Retorna:
+  // { success: true, id: "uuid" } → ir a Paso 2
+  // { success: false } → error (mostrado en toast)
+
+useRegistroPaso2:
+  const { completar, loading } = useRegistroPaso2()
+  
+  // Llamar en onSubmit:
+  const resultado = await completar(registroId, {
+    hojaVida: file,
+    fotoRostro: file
+  })
+  
+  // Retorna:
+  // { success: true } → mostrar éxito
+  // { success: false } → error (mostrado en toast)
+
+
+🎉 ESTADO FINAL
+═══════════════════════════════════════════════════════════════════════
+
+✅ Sistema de 2 envíos: LISTO
+✅ Validaciones: LISTAS
+✅ Almacenamiento: LISTO
+✅ Error handling: LISTO
+✅ UI feedback: LISTO
+✅ Documentación: LISTA
+
+⏳ Esperando: Supabase project activo
+
+
+📚 DOCUMENTACIÓN DISPONIBLE
+═══════════════════════════════════════════════════════════════════════
+
+  • [IMPLEMENTACION_2_ENVIOS.md](IMPLEMENTACION_2_ENVIOS.md)
+    → Guía completa de la implementación
+
+  • [SUPABASE_CHECKLIST.md](SUPABASE_CHECKLIST.md) FASE 11
+    → Test step-by-step
+
+  • [CHANGELOG.md](CHANGELOG.md)
+    → Cambio #7 con detalles técnicos
+
+
+🚀 PRÓXIMAS ACCIONES
+═══════════════════════════════════════════════════════════════════════
+
+1. Crear Supabase project (si no lo hiciste)
+   → 5 minutos
+
+2. Importar schema SQL
+   → 3 minutos
+
+3. Crear .env.local con credenciales
+   → 2 minutos
+
+4. npm install
+   → 2 minutos
+
+5. npm run dev
+   → Inicia servidor
+
+6. Hacer tests (ver TEST 1-4 arriba)
+   → 15 minutos
+
+TOTAL: ~30 minutos para tener todo funcionando
+
+
+═══════════════════════════════════════════════════════════════════════
+
+¿DUDAS?
+
+Ver: [SUPABASE_CHECKLIST.md](SUPABASE_CHECKLIST.md) para setup
+Ver: [IMPLEMENTACION_2_ENVIOS.md](IMPLEMENTACION_2_ENVIOS.md) para detalles
+Ver: [SUPABASE_COMANDOS.md](SUPABASE_COMANDOS.md) para ejemplos
+
+═══════════════════════════════════════════════════════════════════════
+
+Cambio #7 Completado: 19 de Enero de 2026
+Versión: 2.1 (Con Integración React)
+Estado: ✅ LISTO PARA TESTING
+
+¡Los 2 envíos están listos! 🚀

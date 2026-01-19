@@ -4,24 +4,14 @@ import { Send, Loader2, CheckCircle, ArrowLeft, FileText, User } from "lucide-re
 import FileUpload from "@/components/FileUpload";
 import ConfettiBackground from "@/components/ConfettiBackground";
 import { toast } from "sonner";
-
-interface Step1Data {
-  nombreCompleto: string;
-  edad: number;
-  cedula: string;
-  barrio: string;
-  estadoCivil: string;
-  ocupacion: string;
-  fotoFrente: File | null;
-  fotoReverso: File | null;
-}
+import { useRegistroPaso2 } from "@/hooks/useRegistroPaso2";
 
 const RegistroDocumentos = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { completar: completarRegistro, loading: cargandoSupabase } = useRegistroPaso2();
   const [hojaVida, setHojaVida] = useState<File | null>(null);
   const [fotoRostro, setFotoRostro] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState({ hojaVida: "", fotoRostro: "" });
 
@@ -30,10 +20,12 @@ const RegistroDocumentos = () => {
 
   useEffect(() => {
     // If no step 1 data, redirect back to home
-    if (!step1Data) {
+    // Ahora usamos sessionStorage en lugar de location.state
+    const registroId = sessionStorage.getItem('registroId');
+    if (!registroId) {
       navigate("/");
     }
-  }, [step1Data, navigate]);
+  }, [navigate]);
 
   const validateFiles = () => {
     const newErrors = { hojaVida: "", fotoRostro: "" };
@@ -48,27 +40,27 @@ const RegistroDocumentos = () => {
     
     if (!validateFiles()) return;
 
-    setIsSubmitting(true);
+    // Obtener registroId de sessionStorage
+    const registroId = sessionStorage.getItem('registroId');
+    if (!registroId) {
+      toast.error('Error: No se encontró el registro del Paso 1');
+      navigate("/");
+      return;
+    }
 
-    try {
-      // Simular envío completo (aquí iría el webhook de n8n)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      console.log("Step 1 Data:", step1Data);
-      console.log("Hoja de vida:", hojaVida);
-      console.log("Foto rostro:", fotoRostro);
+    // Enviar a Supabase
+    const resultado = await completarRegistro(registroId, {
+      hojaVida: hojaVida || undefined,
+      fotoRostro: fotoRostro || undefined,
+    });
 
+    if (resultado.success) {
       setIsSuccess(true);
-      toast.success("¡Inscripción completada!");
-    } catch (error) {
-      toast.error("Error al enviar. Intenta de nuevo.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleGoBack = () => {
-    navigate("/", { state: step1Data });
+    navigate("/");
   };
 
   if (isSuccess) {
@@ -147,7 +139,7 @@ const RegistroDocumentos = () => {
               PASO 2: TUS DOCUMENTOS
             </h2>
             <p className="text-muted-foreground text-sm mt-2">
-              ¡Ya casi terminas, <span className="text-primary font-medium">{step1Data?.nombreCompleto?.split(' ')[0]}</span>!
+              ¡Ya casi terminas!
             </p>
           </div>
 
@@ -204,10 +196,10 @@ const RegistroDocumentos = () => {
           {/* Submit button */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={cargandoSupabase}
             className="btn-carnaval w-full animate-pulse-glow flex items-center justify-center gap-3 text-xl"
           >
-            {isSubmitting ? (
+            {cargandoSupabase ? (
               <>
                 <Loader2 className="w-6 h-6 animate-spin" />
                 Enviando...

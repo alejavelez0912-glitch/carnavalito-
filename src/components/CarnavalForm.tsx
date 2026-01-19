@@ -6,6 +6,7 @@ import { z } from "zod";
 import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import FileUpload from "./FileUpload";
 import { toast } from "sonner";
+import { useRegistroPaso1 } from "@/hooks/useRegistroPaso1";
 
 const formSchema = z.object({
   nombreCompleto: z.string().min(3, "Nombre debe tener al menos 3 caracteres").max(100),
@@ -20,9 +21,9 @@ type FormData = z.infer<typeof formSchema>;
 
 const CarnavalForm = () => {
   const navigate = useNavigate();
+  const { crear: crearRegistro, loading: cargandoSupabase } = useRegistroPaso1();
   const [fotoFrente, setFotoFrente] = useState<File | null>(null);
   const [fotoReverso, setFotoReverso] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoErrors, setPhotoErrors] = useState({ frente: "", reverso: "" });
 
   const {
@@ -44,25 +45,21 @@ const CarnavalForm = () => {
   const onSubmit = async (data: FormData) => {
     if (!validatePhotos()) return;
 
-    setIsSubmitting(true);
+    // Enviar datos a Supabase
+    const resultado = await crearRegistro({
+      nombre_completo: data.nombreCompleto,
+      edad: data.edad,
+      cedula: data.cedula,
+      barrio: data.barrio,
+      estado_civil: data.estadoCivil,
+      ocupacion: data.ocupacion,
+      foto_cedula_frente: fotoFrente || undefined,
+      foto_cedula_reverso: fotoReverso || undefined,
+    });
 
-    try {
-      // Pequeña pausa para feedback visual
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      // Navegar al paso 2 con los datos del paso 1
-      navigate("/registro-documentos", {
-        state: {
-          ...data,
-          fotoFrente,
-          fotoReverso,
-        },
-      });
-      
-      toast.success("¡Paso 1 completado! Ahora sube tus documentos.");
-    } catch (error) {
-      toast.error("Error. Intenta de nuevo.");
-      setIsSubmitting(false);
+    if (resultado.success) {
+      // Navegar al paso 2
+      navigate("/registro-documentos");
     }
   };
 
@@ -198,10 +195,10 @@ const CarnavalForm = () => {
       {/* Submit button */}
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={cargandoSupabase}
         className="btn-carnaval w-full animate-pulse-glow flex items-center justify-center gap-3 text-xl mt-6"
       >
-        {isSubmitting ? (
+        {cargandoSupabase ? (
           <>
             <Loader2 className="w-6 h-6 animate-spin" />
             Procesando...
