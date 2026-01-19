@@ -4,12 +4,12 @@ import { Send, Loader2, CheckCircle, ArrowLeft, FileText, User } from "lucide-re
 import FileUpload from "@/components/FileUpload";
 import ConfettiBackground from "@/components/ConfettiBackground";
 import { toast } from "sonner";
-import { useRegistroPaso2 } from "@/hooks/useRegistroPaso2";
+import { useRegistroPaso2Telegram } from "@/hooks/useRegistroPaso2Telegram";
 
 const RegistroDocumentos = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { completar: completarRegistro, loading: cargandoSupabase } = useRegistroPaso2();
+  const { completar: completarRegistro, loading: cargandoSupabase } = useRegistroPaso2Telegram();
   const [hojaVida, setHojaVida] = useState<File | null>(null);
   const [fotoRostro, setFotoRostro] = useState<File | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);

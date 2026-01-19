@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import FileUpload from "./FileUpload";
 import { toast } from "sonner";
-import { useRegistroPaso1 } from "@/hooks/useRegistroPaso1";
+import { useRegistroPaso1Telegram } from "@/hooks/useRegistroPaso1Telegram";
 
 const formSchema = z.object({
   nombreCompleto: z.string().min(3, "Nombre debe tener al menos 3 caracteres").max(100),
@@ -21,7 +21,7 @@ type FormData = z.infer<typeof formSchema>;
 
 const CarnavalForm = () => {
   const navigate = useNavigate();
-  const { crear: crearRegistro, loading: cargandoSupabase } = useRegistroPaso1();
+  const { crear: crearRegistro, loading: cargandoSupabase } = useRegistroPaso1Telegram();
   const [fotoFrente, setFotoFrente] = useState<File | null>(null);
   const [fotoReverso, setFotoReverso] = useState<File | null>(null);
   const [photoErrors, setPhotoErrors] = useState({ frente: "", reverso: "" });
