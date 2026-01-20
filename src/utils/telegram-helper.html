@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helper - Obtener Chat ID de Telegram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .step h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .step p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            overflow-x: auto;
+            word-break: break-all;
+        }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+        .chat-id-display {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .copy-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Obtener Chat ID de Telegram</h1>
+        <p class="subtitle">Herramienta para configurar tu bot de Telegram</p>
+
+        <div class="step">
+            <h3>Paso 1: Envía un mensaje a tu bot</h3>
+            <p>Abre Telegram y envía cualquier mensaje a tu bot (por ejemplo: "Hola")</p>
+        </div>
+
+        <div class="step">
+            <h3>Paso 2: Obtén tu Chat ID</h3>
+            <p>Haz clic en el botón de abajo para obtener tu Chat ID automáticamente:</p>
+            <div class="code" id="botTokenDisplay">
+                Token: 8558295711:AAFsLIQ_QyZFgLD7V11tVMntpKI-5QP207M
+            </div>
+            <button class="button" onclick="obtenerChatId()">🔍 Obtener Chat ID</button>
+        </div>
+
+        <div class="result" id="result"></div>
+
+        <div class="step">
+            <h3>Paso 3: Configura el archivo .env.local</h3>
+            <p>Una vez que tengas el Chat ID, cópialo y pégalo en el archivo <code>.env.local</code>:</p>
+            <div class="code">
+                VITE_TELEGRAM_BOT_TOKEN=8558295711:AAFsLIQ_QyZFgLD7V11tVMntpKI-5QP207M<br>
+                VITE_TELEGRAM_CHAT_ID=<span id="chatIdPlaceholder">TU_CHAT_ID_AQUI</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = '8558295711:AAFsLIQ_QyZFgLD7V11tVMntpKI-5QP207M';
+
+        async function obtenerChatId() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '<p>⏳ Obteniendo Chat ID...</p>';
+            resultDiv.style.display = 'block';
+
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`);
+                const data = await response.json();
+
+                if (!data.ok) {
+                    throw new Error(data.description || 'Error al obtener los updates');
+                }
+
+                if (!data.result || data.result.length === 0) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <p><strong>⚠️ No se encontraron mensajes</strong></p>
+                        <p>Asegúrate de haber enviado un mensaje a tu bot primero.</p>
+                        <p>Envía cualquier mensaje al bot en Telegram y vuelve a intentar.</p>
+                    `;
+                    return;
+                }
+
+                // Obtener el último mensaje
+                const lastUpdate = data.result[data.result.length - 1];
+                const chatId = lastUpdate.message?.chat?.id || 
+                              lastUpdate.channel_post?.chat?.id ||
+                              lastUpdate.edited_message?.chat?.id;
+
+                if (!chatId) {
+                    throw new Error('No se pudo encontrar el Chat ID en la respuesta');
+                }
+
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <p><strong>✅ Chat ID encontrado:</strong></p>
+                    <div class="chat-id-display">${chatId}</div>
+                    <button class="copy-btn" onclick="copiarChatId('${chatId}')">📋 Copiar Chat ID</button>
+                    <p style="margin-top: 15px; font-size: 12px;">
+                        💡 <strong>Tip:</strong> Si planeas usar un grupo, crea uno, añade el bot como administrador,
+                        envía un mensaje al grupo y vuelve a ejecutar esta herramienta.
+                    </p>
+                `;
+
+                // Actualizar el placeholder en el paso 3
+                document.getElementById('chatIdPlaceholder').textContent = chatId;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <p><strong>❌ Error:</strong></p>
+                    <p>${error.message}</p>
+                    <p style="margin-top: 10px; font-size: 12px;">
+                        Asegúrate de haber enviado un mensaje al bot antes de ejecutar esta herramienta.
+                    </p>
+                `;
+            }
+        }
+
+        function copiarChatId(chatId) {
+            navigator.clipboard.writeText(chatId).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ ¡Copiado!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

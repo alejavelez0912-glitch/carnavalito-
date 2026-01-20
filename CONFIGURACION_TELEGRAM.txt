@@ -1,0 +1,57 @@
+═══════════════════════════════════════════════════════════════
+  CONFIGURACIÓN RÁPIDA DE TELEGRAM - CARNAVAL JOBS
+═══════════════════════════════════════════════════════════════
+
+🚀 CONFIGURACIÓN INMEDIATA
+─────────────────────────────────────────────────────────────
+
+1. Crea el archivo .env.local en la raíz del proyecto con:
+
+   VITE_TELEGRAM_BOT_TOKEN=8558295711:AAFsLIQ_QyZFgLD7V11tVMntpKI-5QP207M
+   VITE_TELEGRAM_CHAT_ID=
+
+2. OBTENER EL CHAT_ID:
+   
+   a) Envía un mensaje a tu bot en Telegram (cualquier mensaje)
+   
+   b) Abre en tu navegador:
+      https://api.telegram.org/bot8558295711:AAFsLIQ_QyZFgLD7V11tVMntpKI-5QP207M/getUpdates
+   
+   c) Busca en la respuesta: "chat":{"id":XXXXX}
+   
+   d) Copia ese número y pégalo en .env.local después de VITE_TELEGRAM_CHAT_ID=
+
+3. Reinicia el servidor (Ctrl+C y luego npm run dev)
+
+═══════════════════════════════════════════════════════════════
+
+✅ VERIFICACIÓN
+─────────────────────────────────────────────────────────────
+
+- El archivo .env.local debe estar en la raíz del proyecto
+- No debe tener espacios alrededor del signo =
+- Reinicia el servidor después de crear/modificar .env.local
+
+═══════════════════════════════════════════════════════════════
+
+📱 MÉTODO ALTERNATIVO (Más Fácil)
+─────────────────────────────────────────────────────────────
+
+1. Abre src/utils/telegram-helper.html en tu navegador
+2. Haz clic en "Obtener Chat ID"
+3. Copia el Chat ID que aparece
+4. Pégalo en .env.local
+
+═══════════════════════════════════════════════════════════════
+
+🔧 PARA USAR EN UN GRUPO:
+─────────────────────────────────────────────────────────────
+
+1. Crea un grupo en Telegram
+2. Agrega el bot al grupo
+3. Haz al bot administrador
+4. Envía un mensaje al grupo
+5. Obtén el Chat ID (será un número negativo)
+6. Úsalo en .env.local
+
+═══════════════════════════════════════════════════════════════
