@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+bun.lockb
+
+# Build outputs
+dist
+.next
+build
+
+# Environment files
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation
+*.md
+LEEME_PRIMERO.txt
+CONFIGURACION_TELEGRAM.txt
+INSTRUCCIONES_TELEGRAM.txt
+SUPABASE_CHECKLIST.md
+
+# Test files
+vitest.config.ts
+src/test
+
+# Git
+.git
+.gitignore
